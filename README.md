@@ -7,3 +7,5 @@
 ## git reset . - Retira as modificações para subir
 ## git commit -m "Mensagem" - Adiciona mensagem sobre o que você fez
 ## git push - Sobe as modificações
+
+##teste 
