@@ -8,7 +8,7 @@
 ## git commit -m "Mensagem" - Adiciona mensagem sobre o que você fez
 ## git push - Sobe as modificações
 
-## teste
-## teste 2
-
-# outro teste
+# PARA ADICIONAR UM CÓDIGO NOVO
+1 - git add . - Adiciona as modificações para subir
+2 - git commit -m "Mensagem" - Adiciona mensagem sobre o que você fez
+3 - git push - Sobe as modificações
