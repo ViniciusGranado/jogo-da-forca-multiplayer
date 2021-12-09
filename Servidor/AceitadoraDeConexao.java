@@ -4,8 +4,9 @@ import java.util.*;
 public class AceitadoraDeConexao extends Thread {
   private ServerSocket pedido;
   private ArrayList<Parceiro> usuarios;
+  private ArrayList<Parceiro> esperaPartida;
 
-  public AceitadoraDeConexao(String porta, ArrayList<Parceiro> usuarios)
+  public AceitadoraDeConexao(String porta, ArrayList<Parceiro> usuarios, ArrayList<Parceiro> esperaPartida)
       throws Exception {
     if (porta == null)
       throw new Exception("Porta ausente");
@@ -20,6 +21,7 @@ public class AceitadoraDeConexao extends Thread {
       throw new Exception("Usuarios ausentes");
 
     this.usuarios = usuarios;
+    this.esperaPartida = esperaPartida;
   }
 
   public void run() {
@@ -33,12 +35,11 @@ public class AceitadoraDeConexao extends Thread {
 
       SupervisoraDeConexao supervisoraDeConexao = null;
       try {
-        supervisoraDeConexao = new SupervisoraDeConexao(conexao, usuarios);
+        supervisoraDeConexao = new SupervisoraDeConexao(conexao, usuarios, esperaPartida);
       } catch (Exception erro) {
         //
       }
 
-      System.out.println("Usuário conectado");
       supervisoraDeConexao.start();
     }
   }

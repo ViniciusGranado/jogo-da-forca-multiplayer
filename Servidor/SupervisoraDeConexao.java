@@ -3,84 +3,83 @@ import java.net.*;
 import java.util.*;
 
 public class SupervisoraDeConexao extends Thread {
-	private Parceiro usuario;
-	private Socket conexao;
-	private ArrayList<Parceiro> usuarios;
+  private Parceiro usuario;
+  private Socket conexao;
+  private ArrayList<Parceiro> usuarios;
+  private ArrayList<Parceiro> esperaPartida;
 
-	public SupervisoraDeConexao(Socket conexao, ArrayList<Parceiro> usuarios)
-			throws Exception {
-		if (conexao == null) {
-			throw new Exception("Conexao ausente");
-		}
 
-		if (usuarios == null) {
-			throw new Exception("Usuarios ausentes");
-		}
+  public SupervisoraDeConexao(Socket conexao, ArrayList<Parceiro> usuarios, ArrayList<Parceiro> esperaPartida) throws Exception {
+    if (conexao == null) {
+      throw new Exception("Conexao ausente");
+    }
 
-		this.conexao = conexao;
-		this.usuarios = usuarios;
-	}
+    if (usuarios == null) {
+      throw new Exception("Usuarios ausentes");
+    }
 
-	public void run() {
-		// Transmissor
-		ObjectOutputStream transmissor;
-		try {
-			transmissor = new ObjectOutputStream(
-					this.conexao.getOutputStream());
-		} catch (Exception erro) {
-			return;
-		}
+    this.conexao = conexao;
+    this.usuarios = usuarios;
+    this.esperaPartida = esperaPartida;
+  }
 
-		// Receptor
-		ObjectInputStream receptor = null;
-		try {
-			receptor = new ObjectInputStream(this.conexao.getInputStream());
-		} catch (Exception err0) {
-			try {
-				transmissor.close();
-			} catch (Exception falha) {
-				// so tentando fechar antes de acabar a thread
-			}
+  public void run() {
+    // Transmissor
+    ObjectOutputStream transmissor;
+    try {
+      transmissor = new ObjectOutputStream(
+              this.conexao.getOutputStream());
+    } catch (Exception erro) {
+      return;
+    }
 
-			return;
-		}
+    // Receptor
+    ObjectInputStream receptor;
+    try {
+      receptor = new ObjectInputStream(this.conexao.getInputStream());
+    } catch (Exception err0) {
+      try {
+        transmissor.close();
+      } catch (Exception falha) {
+        // so tentando fechar antes de acabar a thread
+      }
 
-		// Parceiro Usuario
-		try {
-			this.usuario = new Parceiro(this.conexao, receptor, transmissor);
-		} catch (Exception erro) {
-			//
-		} // sei que passei os parametros corretos
+      return;
+    }
 
-		try {
-			synchronized (this.usuarios) {
-				this.usuarios.add(this.usuario);
-			}
+    // Parceiro Usuario
+    try {
+      this.usuario = new Parceiro(this.conexao, receptor, transmissor);
+    } catch (Exception erro) {
+      //
+    } // sei que passei os parametros corretos
 
-			for (;;) {
-				Comunicado comunicado = this.usuario.envie();
+    try {
+      synchronized (this.usuarios) {
+        this.usuarios.add(this.usuario);
+      }
 
-				if (comunicado == null) {
-					return;
-				} else if (comunicado instanceof PedidoParaSair) {
-					System.out.println("Usuário desconectado");
+      synchronized (this.esperaPartida) {
+        this.esperaPartida.add(this.usuario);
 
-					synchronized (this.usuarios) {
-						this.usuarios.remove(this.usuario);
-					}
+        if (this.esperaPartida.size() == 3) {
+          ArrayList<Parceiro> esperaPartidaClone = (ArrayList<Parceiro>) this.esperaPartida.clone();
+          Partida partida = new Partida(esperaPartidaClone);
 
-					this.usuario.adeus();
-				}
-			}
-		} catch (Exception erro) {
-			try {
-				transmissor.close();
-				receptor.close();
-			} catch (Exception falha) {
-				// so tentando fechar antes de acabar a thread
-			}
+          this.esperaPartida.clear();
 
-			return;
-		}
-	}
+          partida.start();
+        };
+      }
+    } catch (Exception erro) {
+      try {
+        transmissor.close();
+        receptor.close();
+      } catch (Exception falha) {
+        // so tentando fechar antes de acabar a thread
+      }
+
+      return;
+    }
+  }
 }

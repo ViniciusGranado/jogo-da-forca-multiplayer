@@ -16,13 +16,15 @@ public class Servidor {
       porta = args[0];
     }
 
-    // Lista de Jogadores
+    // Lista de Jogadores && Fila de espera de partida
     ArrayList<Parceiro> usuarios = new ArrayList<Parceiro>();
+    ArrayList<Parceiro> esperaPartida = new ArrayList<Parceiro>();
+
 
     // Aceitadora de Conexão
     AceitadoraDeConexao aceitadoraDeConexao = null;
     try {
-      aceitadoraDeConexao = new AceitadoraDeConexao(porta, usuarios);
+      aceitadoraDeConexao = new AceitadoraDeConexao(porta, usuarios, esperaPartida);
       aceitadoraDeConexao.start();
     } catch (Exception erro) {
       System.err.println("Escolha uma porta apropriada e liberada para uso!\n");
