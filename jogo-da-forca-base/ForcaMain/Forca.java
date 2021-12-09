@@ -84,6 +84,7 @@ public class Forca
 					  
 					  if(Chute==palavra)
 					   System.out.println   ("parabens voce acertou a palavra!! ");
+					   //comunicado que ganhou
 					   
 					   else{
 					    System.out.println   ("voce errou a palavra!! ");
@@ -112,6 +113,9 @@ public class Forca
 			
 			   if(!tracinhos.isAindaComTracinhos())
 				System.out.println ("Parabens! Voce ganhou! A palavra era mesmo "+palavra+"\n");
+				//tambem podemos deixar oos comunicados aqui
+
+				
     
     
     
