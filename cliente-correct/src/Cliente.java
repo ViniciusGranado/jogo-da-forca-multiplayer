@@ -83,14 +83,17 @@ public class Cliente {
       System.out.println(erro);
     }
 
+    boolean partidaTerminou = false;
+
     try {
       Comunicado comunicado;
       do {
-        // Terminal.clear();
+        Terminal.clear();
         System.out.println("Aguarde a jogada dos outros jogadores...");
 
+        // TODO MOSTRAR JOGO
+
         comunicado = servidor.espie();
-        System.out.println(comunicado.getClass());
 
         if (comunicado instanceof ComunicadoDeFimDePartida) {
           servidor.envie();
@@ -135,13 +138,20 @@ public class Cliente {
               }
             } while (letra == null);
               
-            servidor.receba(new TentativaDeLetra(Character.toLowerCase(letra)));
+            servidor.receba(new TentativaDeLetra(Character.toUpperCase(letra)));
 
             Comunicado statusLetra;
             do {
-              statusLetra = servidor.envie();
+              statusLetra = servidor.espie();
 
-              if (statusLetra instanceof ComunicadoLetraJaDigitada) {
+              if (statusLetra == null) {
+                continue;
+              }
+
+              if (statusLetra instanceof ComunicadoDeResultado) {
+                partidaTerminou = true;
+                break;
+              } else if (statusLetra instanceof ComunicadoLetraJaDigitada) {
                 System.out.println("Essa letra ja foi digitada!\n");
                 break;
               } else if (statusLetra instanceof ComunicadoLetraErrada) {
@@ -164,12 +174,12 @@ public class Cliente {
               }
             } while (palavra == null);
 
-            servidor.receba(new TentativaDePalavra(palavra.toLowerCase()));
+            servidor.receba(new TentativaDePalavra(palavra.toUpperCase()));
           }
         } else {
           servidor.envie();
         }
-      } while (!(comunicado instanceof ComunicadoDeFimDePartida));
+      } while (!partidaTerminou);
     } catch (Exception erro) {
       System.out.println(erro);
     }

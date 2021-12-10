@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 
 public class Partida extends Thread {
-  private ArrayList<Parceiro> jogadores;
-  private Palavra palavra;
+  private final ArrayList<Parceiro> jogadores;
+  private final Palavra palavra;
   private Tracinhos tracinhos;
   private ControladorDeLetrasJaDigitadas controladorDeLetrasJaDigitadas;
 
@@ -20,7 +20,9 @@ public class Partida extends Thread {
   }
 
   public void run() {
+    System.out.println(this.palavra.getTexto());
     synchronized(jogadores) {
+
       for (Parceiro jogador : jogadores) {
         try {
           jogador.receba(new ComunicadoDeInicioDePartida());
@@ -46,7 +48,15 @@ public class Partida extends Thread {
 
             if (comunicado instanceof TentativaDePalavra) {
               String palavra = ((TentativaDePalavra) comunicado).getPalavra();
-              System.out.println(palavra);
+
+              if (palavra.equals(this.palavra.getTexto())) {
+                jogador.receba(new ComunicadoDeResultado(this.palavra.getTexto(), true));
+                partidaTerminou = true;
+              } else {
+                jogador.receba(new ComunicadoDeResultado(this.palavra.getTexto(), false));
+              }
+
+              this.jogadores.remove(jogador);
             }
 
             if (comunicado instanceof TentativaDeLetra) {
@@ -67,7 +77,14 @@ public class Partida extends Thread {
                     tracinhos.revele(posicao, letra);
                   }
 
-                  jogador.receba(new ComunicadoLetraCorreta());
+                  if (!this.tracinhos.isAindaComTracinhos()) {
+                    jogador.receba(new ComunicadoDeResultado(this.palavra.getTexto(), true));
+                    partidaTerminou = true;
+
+//                    this.jogadores.remove(jogador);
+                  } else {
+                    jogador.receba(new ComunicadoLetraCorreta());
+                  }
                 }
               }
             }
@@ -77,12 +94,24 @@ public class Partida extends Thread {
         }
       } while (!partidaTerminou);
 
-      for (Parceiro jogador : jogadores) {
-        System.out.println("DESLIGAMENTO");
-        try {
-          jogador.receba(new ComunicadoDeDesligamento());
-        } catch (Exception erro) {
-          //
+
+      if (jogadores.size() == 1) {
+        for (Parceiro jogador : jogadores) {
+          try {
+            jogador.receba(new ComunicadoDeResultado(this.palavra.getTexto(), true));
+//          this.jogadores.remove(jogador);
+          } catch (Exception erro) {
+            //
+          }
+        }
+      } else {
+        for (Parceiro jogador : jogadores) {
+          try {
+            jogador.receba(new ComunicadoDeResultado(this.palavra.getTexto(), false));
+//          this.jogadores.remove(jogador);
+          } catch (Exception erro) {
+            //
+          }
         }
       }
     }
