@@ -6,3 +6,5 @@
 /httpRequests/
 /dataSources/
 /dataSources.local.xml
+*.class
+*.iml

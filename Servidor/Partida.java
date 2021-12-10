@@ -2,16 +2,24 @@ import java.util.ArrayList;
 
 public class Partida extends Thread {
   private ArrayList<Parceiro> jogadores;
-  private String palavra;
+  private Palavra palavra;
+  private Tracinhos tracinhos;
+  private ControladorDeLetrasJaDigitadas controladorDeLetrasJaDigitadas;
 
   public Partida(ArrayList<Parceiro> jogadores) {
     this.jogadores = jogadores;
-    this.palavra = "CASA";
+
+    this.palavra = BancoDePalavras.getPalavraSorteada();
+    this.controladorDeLetrasJaDigitadas = new ControladorDeLetrasJaDigitadas();
+
+    try {
+      this.tracinhos = new Tracinhos(this.palavra.getTamanho());
+    } catch(Exception erro) {
+      System.out.println(erro.getMessage());
+    }
   }
 
   public void run() {
-    ComunicadoDeVezDoJogador comunicadoDeVezDoJogador = new ComunicadoDeVezDoJogador();
-
     synchronized(jogadores) {
       for (Parceiro jogador : jogadores) {
         try {
@@ -25,7 +33,7 @@ public class Partida extends Thread {
       do {
         for (Parceiro jogador : jogadores) {
           try {
-            jogador.receba(comunicadoDeVezDoJogador);
+            jogador.receba(new ComunicadoDeVezDoJogador(this.controladorDeLetrasJaDigitadas.toString(), this.tracinhos.toString()));
           } catch (Exception erro) {
             System.out.println("Erro no comunicado vez do jogador");
           }
@@ -34,12 +42,19 @@ public class Partida extends Thread {
             Comunicado comunicado = null;
             do {
               comunicado = jogador.envie();
-            } while (!(comunicado instanceof TentativaDePalavra));
+            } while (!(comunicado instanceof TentativaDePalavra) && !(comunicado instanceof TentativaDeLetra));
 
-            String palavra = ((TentativaDePalavra) comunicado).getPalavra();
-            System.out.println(palavra);
+            if (comunicado instanceof TentativaDePalavra) {
+              String palavra = ((TentativaDePalavra) comunicado).getPalavra();
+              System.out.println(palavra);
+            }
+
+            if (comunicado instanceof TentativaDeLetra) {
+              char letra = ((TentativaDeLetra) comunicado).getLetra();
+              System.out.println(letra);
+            }
           } catch (Exception erro) {
-            System.out.println("Erro no loop");
+            System.out.println(erro.getMessage());
           }
         }
       } while (!partidaTerminou);

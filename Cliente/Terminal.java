@@ -1,4 +1,4 @@
-public class Console {
+public class Terminal {
   public static void clear() {
     if (System.getProperty("os.name").contains("Windows"))
       try {

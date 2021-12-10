@@ -35,7 +35,7 @@ public class Parceiro {
       this.transmissor.writeObject(x);
       this.transmissor.flush();
     } catch (IOException erro) {
-      throw new Exception("Erro de transmissao");
+      throw new Exception("Erro de transmissao no receba");
     }
   }
 
@@ -47,7 +47,7 @@ public class Parceiro {
       this.mutEx.release();
       return this.proximoComunicado;
     } catch (Exception erro) {
-      throw new Exception("Erro de recepcao");
+      throw new Exception("Erro de recepcao no espie");
     }
   }
 

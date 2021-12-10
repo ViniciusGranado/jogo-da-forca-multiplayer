@@ -3,7 +3,7 @@ import java.io.*;
 
 public class Cliente {
   public static final String HOST_PADRAO = "localhost";
-  public static final int PORTA_PADRAO = 3000;
+  public static final int PORTA_PADRAO = 4000;
 
   public static void main(String[] args) {
     // Socket
@@ -67,7 +67,7 @@ public class Cliente {
 
     // Execução
 
-    Console.clear();
+    Terminal.clear();
     System.out.println("Aguardando a entrada de novos jogadores...");
     System.out.println("O jogo ira iniciar em breve.");
 
@@ -86,51 +86,73 @@ public class Cliente {
     try {
       Comunicado comunicado;
       do {
-        Console.clear();
+        // Terminal.clear();
         System.out.println("Aguarde a jogada dos outros jogadores...");
 
         comunicado = servidor.espie();
         System.out.println(comunicado.getClass());
-//        if (comunicado == null) {
-//          continue;
-//        }
 
         if (comunicado instanceof ComunicadoDeFimDePartida) {
+          servidor.envie();
           break;
-        }
-
-        if (comunicado instanceof ComunicadoDeVezDoJogador) {
+        } else if (comunicado instanceof ComunicadoDeVezDoJogador) {
+          ComunicadoDeVezDoJogador jogada = (ComunicadoDeVezDoJogador) servidor.envie();
           String opcaoUsuario;
 
-          Console.clear();
+          Terminal.clear();
           System.out.println("Chegou a sua vez!!");
           do {
             System.out.println("Faca sua jogada\n");
 
+            System.out.println("Palavra...: " + jogada.getTracinhos());
+            System.out.println("Digitadas.: " + jogada.getLetrasJaDigitadas() + "\n");
+
             System.out.println("SELECIONE UMA OPCAO: ");
-            System.out.println("[1] Jogar uma letra");
-            System.out.println("[2] Adivinhar palavra\n");
+            System.out.println("Se deseja digitar uma letra digite [L]");
+            System.out.println("Se deseja chutar a palavra  digite [P]\n");
 
             System.out.print("Digite sua opcao: ");
 
             opcaoUsuario = Teclado.getUmString();
 
-            if (opcaoUsuario.equals("1") || opcaoUsuario.equals("2")) {
+            if (opcaoUsuario.toLowerCase().equals("l") || opcaoUsuario.toLowerCase().equals("p")) {
               break;
             }
 
-            Console.clear();
+            Terminal.clear();
             System.out.println("Opcao invalida. Tente novamente.");
           } while (true);
 
-          String palavra;
+          if (opcaoUsuario.toLowerCase().equals("l")) {
+            Character letra = null;
 
-          System.out.print("Digite a palavra: ");
-          palavra = Teclado.getUmString();
+            do {
+              try {
+                System.out.print("Qual a letra? ");
+                letra = Teclado.getUmChar();
+              } catch (Exception erro) {
+                System.out.println("\nLetra invalida, tente novamente! \n");
+              }
+            } while (letra == null);
 
-          servidor.receba(new TentativaDePalavra(palavra));
+            servidor.receba(new TentativaDeLetra(letra));
+          } else {
+            String palavra = null;
+
+            do {
+              try {
+                System.out.print("Qual a palavra? ");
+                palavra = Teclado.getUmString();
+              } catch (Exception erro) {
+                System.out.println("Palavra inválida, tente novamente! \n");
+              }
+            } while (palavra == null);
+
+            servidor.receba(new TentativaDePalavra(palavra));
+          }
+        } else {
+          servidor.envie();
         }
-        servidor.envie();
       } while (!(comunicado instanceof ComunicadoDeFimDePartida));
     } catch (Exception erro) {
       System.out.println(erro);
