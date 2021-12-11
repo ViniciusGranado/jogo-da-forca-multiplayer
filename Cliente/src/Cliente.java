@@ -3,7 +3,7 @@ import java.io.*;
 
 public class Cliente {
   public static final String HOST_PADRAO = "localhost";
-  public static final int PORTA_PADRAO = 4000;
+  public static final int PORTA_PADRAO = 3000;
 
   public static void main(String[] args) {
     // Socket

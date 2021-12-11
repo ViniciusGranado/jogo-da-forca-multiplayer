@@ -47,3 +47,29 @@
     - Se errar, desconecta jogador. Mostra palavra para quem perdeu. O jogo continua.
     - Se errar, e só tiver dois jogadores, o jogador que sobrar ganha.
     - Desconecta todo mundo.
+
+# DIVISÃO TRABALHO
+Demonstração do jogo - vini
+
+1 - Nat
+Cliente
+ComunicadoLetraCorreta
+ComunicadoLetraErrada
+ComunicadoLetraJaDigitada
+ComunicadoDeInicioDePartida
+
+2 - Leticia
+TratadoraDeComunicadoDeDesligamento - Alterada - Adicionada verificação de fim de jogo, mostra se jogador ganhou ou não, e qual era a palavra
+ComunicadoDeResultado
+ComunicadoDeVezDoJogador
+ComunicadoDeJogadadaDeOutroJogador
+TentativaDePalavra
+TentativaDeLetra
+
+3 - Jonas
+Servidor
+AceitodoraDeConexão
+SupervisoraDeConexão - Lógica diferente começa na linha 57
+
+4 - Vinicius
+Partida
