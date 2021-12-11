@@ -83,18 +83,22 @@ public class Cliente {
       System.out.println(erro);
     }
 
+    boolean partidaTerminou = false;
+
+    Terminal.clear();
+    System.out.println("Aguarde a jogada dos outros jogadores...\n");
     try {
       Comunicado comunicado;
       do {
-        // Terminal.clear();
-        System.out.println("Aguarde a jogada dos outros jogadores...");
-
         comunicado = servidor.espie();
-        System.out.println(comunicado.getClass());
 
-        if (comunicado instanceof ComunicadoDeFimDePartida) {
-          servidor.envie();
-          break;
+        if (comunicado instanceof ComunicadoDeJogadaDeOutroJogador) {
+          ComunicadoDeJogadaDeOutroJogador jogada = (ComunicadoDeJogadaDeOutroJogador) servidor.envie();
+
+          System.out.println("Palavra...: " + jogada.getTracinhos());
+          System.out.println("Digitadas.: " + jogada.getLetrasJaDigitadas() + "\n");
+
+          System.out.println("Aguarde a jogada dos outros jogadores...\n");
         } else if (comunicado instanceof ComunicadoDeVezDoJogador) {
           ComunicadoDeVezDoJogador jogada = (ComunicadoDeVezDoJogador) servidor.envie();
           String opcaoUsuario;
@@ -135,13 +139,22 @@ public class Cliente {
               }
             } while (letra == null);
               
-            servidor.receba(new TentativaDeLetra(Character.toLowerCase(letra)));
+            servidor.receba(new TentativaDeLetra(Character.toUpperCase(letra)));
 
             Comunicado statusLetra;
             do {
-              statusLetra = servidor.envie();
+              statusLetra = servidor.espie();
 
-              if (statusLetra instanceof ComunicadoLetraJaDigitada) {
+              if (statusLetra == null) {
+                continue;
+              }
+
+              Terminal.clear();
+
+              if (statusLetra instanceof ComunicadoDeResultado) {
+                partidaTerminou = true;
+                break;
+              } else if (statusLetra instanceof ComunicadoLetraJaDigitada) {
                 System.out.println("Essa letra ja foi digitada!\n");
                 break;
               } else if (statusLetra instanceof ComunicadoLetraErrada) {
@@ -164,12 +177,26 @@ public class Cliente {
               }
             } while (palavra == null);
 
-            servidor.receba(new TentativaDePalavra(palavra.toLowerCase()));
+            servidor.receba(new TentativaDePalavra(palavra.toUpperCase()));
+
+            Comunicado statusPalavra;
+            do {
+              statusPalavra = servidor.espie();
+
+              if (statusPalavra == null) {
+                continue;
+              }
+
+              if (statusPalavra instanceof ComunicadoDeResultado) {
+                partidaTerminou = true;
+                break;
+              }
+            } while (true);
           }
         } else {
           servidor.envie();
         }
-      } while (!(comunicado instanceof ComunicadoDeFimDePartida));
+      } while (!partidaTerminou);
     } catch (Exception erro) {
       System.out.println(erro);
     }
