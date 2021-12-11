@@ -85,19 +85,21 @@ public class Cliente {
 
     boolean partidaTerminou = false;
 
+    Terminal.clear();
+    System.out.println("Aguarde a jogada dos outros jogadores...\n");
     try {
       Comunicado comunicado;
       do {
-        Terminal.clear();
-        System.out.println("Aguarde a jogada dos outros jogadores...");
-
-        // TODO MOSTRAR JOGO
-
         comunicado = servidor.espie();
 
-        if (comunicado instanceof ComunicadoDeFimDePartida) {
-          servidor.envie();
-          break;
+        if (comunicado instanceof ComunicadoDeJogadaDeOutroJogador) {
+
+          ComunicadoDeJogadaDeOutroJogador jogada = (ComunicadoDeJogadaDeOutroJogador) servidor.envie();
+
+          System.out.println("Aguarde a jogada dos outros jogadores...\n");
+
+          System.out.println("Palavra...: " + jogada.getTracinhos());
+          System.out.println("Digitadas.: " + jogada.getLetrasJaDigitadas() + "\n");
         } else if (comunicado instanceof ComunicadoDeVezDoJogador) {
           ComunicadoDeVezDoJogador jogada = (ComunicadoDeVezDoJogador) servidor.envie();
           String opcaoUsuario;
@@ -148,6 +150,8 @@ public class Cliente {
                 continue;
               }
 
+              Terminal.clear();
+
               if (statusLetra instanceof ComunicadoDeResultado) {
                 partidaTerminou = true;
                 break;
@@ -175,6 +179,20 @@ public class Cliente {
             } while (palavra == null);
 
             servidor.receba(new TentativaDePalavra(palavra.toUpperCase()));
+
+            Comunicado statusPalavra;
+            do {
+              statusPalavra = servidor.espie();
+
+              if (statusPalavra == null) {
+                continue;
+              }
+
+              if (statusPalavra instanceof ComunicadoDeResultado) {
+                partidaTerminou = true;
+                break;
+              }
+            } while (true);
           }
         } else {
           servidor.envie();

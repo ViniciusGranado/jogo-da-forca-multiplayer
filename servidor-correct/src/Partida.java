@@ -1,10 +1,11 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Partida extends Thread {
   private final ArrayList<Parceiro> jogadores;
   private final Palavra palavra;
   private Tracinhos tracinhos;
-  private ControladorDeLetrasJaDigitadas controladorDeLetrasJaDigitadas;
+  private final ControladorDeLetrasJaDigitadas controladorDeLetrasJaDigitadas;
 
   public Partida(ArrayList<Parceiro> jogadores) {
     this.jogadores = jogadores;
@@ -32,8 +33,13 @@ public class Partida extends Thread {
       }
 
       boolean partidaTerminou = false;
+      boolean terminouPorPalavra = false;
+
       do {
-        for (Parceiro jogador : jogadores) {
+        Iterator<Parceiro> itr = this.jogadores.iterator();
+        while (!partidaTerminou && itr.hasNext()) {
+          Parceiro jogador = itr.next();
+
           try {
             jogador.receba(new ComunicadoDeVezDoJogador(this.controladorDeLetrasJaDigitadas.toString(), this.tracinhos.toString()));
           } catch (Exception erro) {
@@ -52,11 +58,18 @@ public class Partida extends Thread {
               if (palavra.equals(this.palavra.getTexto())) {
                 jogador.receba(new ComunicadoDeResultado(this.palavra.getTexto(), true));
                 partidaTerminou = true;
+
+                itr.remove();
               } else {
                 jogador.receba(new ComunicadoDeResultado(this.palavra.getTexto(), false));
-              }
 
-              this.jogadores.remove(jogador);
+                itr.remove();
+
+                if (this.jogadores.size() == 1) {
+                  terminouPorPalavra = true;
+                  partidaTerminou = true;
+                }
+              }
             }
 
             if (comunicado instanceof TentativaDeLetra) {
@@ -81,10 +94,22 @@ public class Partida extends Thread {
                     jogador.receba(new ComunicadoDeResultado(this.palavra.getTexto(), true));
                     partidaTerminou = true;
 
-//                    this.jogadores.remove(jogador);
+                    itr.remove();
                   } else {
                     jogador.receba(new ComunicadoLetraCorreta());
                   }
+                }
+              }
+            }
+
+            if (!partidaTerminou) {
+              for (Parceiro j : jogadores) {
+                try {
+//                  if (j != jogador) {
+                    j.receba(new ComunicadoDeJogadaDeOutroJogador(this.controladorDeLetrasJaDigitadas.toString(), this.tracinhos.toString()));
+//                  }
+                } catch (Exception erro) {
+                  //
                 }
               }
             }
@@ -95,11 +120,10 @@ public class Partida extends Thread {
       } while (!partidaTerminou);
 
 
-      if (jogadores.size() == 1) {
+      if (jogadores.size() == 1 && terminouPorPalavra) {
         for (Parceiro jogador : jogadores) {
           try {
             jogador.receba(new ComunicadoDeResultado(this.palavra.getTexto(), true));
-//          this.jogadores.remove(jogador);
           } catch (Exception erro) {
             //
           }
@@ -108,7 +132,6 @@ public class Partida extends Thread {
         for (Parceiro jogador : jogadores) {
           try {
             jogador.receba(new ComunicadoDeResultado(this.palavra.getTexto(), false));
-//          this.jogadores.remove(jogador);
           } catch (Exception erro) {
             //
           }
