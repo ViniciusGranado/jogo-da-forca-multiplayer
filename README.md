@@ -59,6 +59,7 @@ ComunicadoLetraJaDigitada
 ComunicadoDeInicioDePartida
 
 2 - Leticia
+Terminal - Dizer que a classe verifica qual é o sistema operacional, e limpa o terminal
 TratadoraDeComunicadoDeDesligamento - Alterada - Adicionada verificação de fim de jogo, mostra se jogador ganhou ou não, e qual era a palavra
 ComunicadoDeResultado
 ComunicadoDeVezDoJogador
